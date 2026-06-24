@@ -16,7 +16,11 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 
-app.use(cors());
+
+app.use(cors({
+  origin: 'https://fds-akademi-frontend.vercel.app', // Remplace par l'URL exacte de ton Vercel
+  credentials: true
+}));
 app.use(express.json());
 
 // Rendre le dossier 'uploads' public avec un chemin absolu robuste
