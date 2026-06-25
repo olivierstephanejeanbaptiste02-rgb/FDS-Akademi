@@ -18,7 +18,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: 'https://fds-akademi-frontend.vercel.app', // Remplace par l'URL exacte de ton Vercel
+  origin: '*', // pour toutes les liens
   credentials: true
 }));
 app.use(express.json());
