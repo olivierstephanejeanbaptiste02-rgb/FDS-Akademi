@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
   CheckCircle, AlertCircle, Clock, XCircle, 
-  Award, ChevronDown, Link // Import de l'icône Link pour le partage
+  Award, ChevronDown, Link 
 } from 'lucide-react';
 
 export default function StudentDashboard({ viewMode }) {
@@ -10,6 +10,9 @@ export default function StudentDashboard({ viewMode }) {
   const [compView, setCompView] = useState('list'); 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); 
   const dropdownRef = useRef(null);
+
+  // Configuration dynamique de l'URL de l'API globale
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const [courses] = useState([
     { id: 1, code: 'FR', name: 'Français Appliqué', prof: 'Prof. Rémy', color: 'bg-amber-500' },
@@ -24,7 +27,7 @@ export default function StudentDashboard({ viewMode }) {
   const [selectedProfId, setSelectedProfId] = useState('');
   const [selectedProfName, setSelectedProfName] = useState('');
 
-  // CORRECTION CLÉ : initialisé avec la clé 'fichier' pour correspondre parfaitement au backend
+  // Initialisé avec la clé 'fichier' pour correspondre au backend
   const initialCompState = { projet: '', description: '', github: '', fichier: null };
   const [newComp, setNewComp] = useState(initialCompState);
 
@@ -57,10 +60,10 @@ export default function StudentDashboard({ viewMode }) {
   const offsetEnAttente = -dashValide;
   const offsetRejete = -(dashValide + dashEnAttente);
 
-  // Fonctions de récupération encapsulées pour pouvoir les ré-appeler après soumission
+  // Fonctions de récupération encapsulées
   const fetchMyCompetences = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/competences/my', {
+      const res = await fetch(`${API_URL}/api/competences/my`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (res.ok) {
@@ -94,7 +97,7 @@ export default function StudentDashboard({ viewMode }) {
   useEffect(() => {
     const fetchProfessorsForSelect = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/professors', {
+        const res = await fetch(`${API_URL}/api/professors`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         if (res.ok) {
@@ -112,7 +115,7 @@ export default function StudentDashboard({ viewMode }) {
 
     fetchProfessorsForSelect();
     fetchMyCompetences();
-  }, [viewMode, compView]);
+  }, [viewMode, compView, API_URL]);
 
   // Sélection d'un professeur
   const handleProfSelect = (id, fullName) => {
@@ -121,7 +124,7 @@ export default function StudentDashboard({ viewMode }) {
     setIsDropdownOpen(false);
   };
 
-  // 5. Envoi via FormData (CORRIGÉ ET SYNCHRONISÉ AVEC LE BACKEND)
+  // 5. Envoi via FormData
   const handleCompSubmit = async (e) => {
     e.preventDefault();
     
@@ -141,7 +144,7 @@ export default function StudentDashboard({ viewMode }) {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/competences', {
+      const response = await fetch(`${API_URL}/api/competences`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -300,7 +303,7 @@ export default function StudentDashboard({ viewMode }) {
                     <th className="p-4">Description</th>
                     <th className="p-4">Professeur Évaluateur</th>
                     <th className="p-4 text-center">Statut</th>
-                    <th className="p-4 text-center">Partage</th> {/* Nouvelle colonne */}
+                    <th className="p-4 text-center">Partage</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
@@ -317,7 +320,6 @@ export default function StudentDashboard({ viewMode }) {
                         </span>
                       </td>
                       <td className="p-4 text-center">
-                        {/* Condition : Afficher le bouton de lien recruteur uniquement si valide avec un token public */}
                         {getCleanStatus(c.status) === 'valide' && c.public_token ? (
                           <button 
                             onClick={() => copyShareLink(c.public_token)}

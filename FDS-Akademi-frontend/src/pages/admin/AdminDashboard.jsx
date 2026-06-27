@@ -1,12 +1,15 @@
-import  { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import InputPassword from '../../components/InputPassword';
 import { 
   CheckCircle, AlertCircle, UserPlus, List, 
-  Users, GraduationCap, ShieldCheck, Clock, PlusCircle, Megaphone
+  Users, GraduationCap, ShieldCheck, Clock, Megaphone
 } from 'lucide-react';
 
 export default function AdminDashboard({ activeTab }) {
   const [status, setStatus] = useState({ type: '', msg: '' });
+  
+  // Configuration dynamique de l'URL de l'API globale
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
   
   // États d'affichage initiaux
   const [studentView, setStudentView] = useState('list');
@@ -41,7 +44,7 @@ export default function AdminDashboard({ activeTab }) {
 
   const fetchStudents = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/students', {
+      const response = await fetch(`${API_URL}/api/students`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.ok) {
@@ -55,7 +58,7 @@ export default function AdminDashboard({ activeTab }) {
 
   const fetchProfessors = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/professors', {
+      const response = await fetch(`${API_URL}/api/professors`, {
         headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
       });
       if (response.ok) {
@@ -71,10 +74,10 @@ export default function AdminDashboard({ activeTab }) {
     setRecentActivities(prev => [{ id: Date.now(), type, title, details, time: 'À l\'instant' }, ...prev]);
   };
 
-  const handleFetchSubmit = async (url, payload, modeType) => {
+  const handleFetchSubmit = async (endpoint, payload, modeType) => {
     setStatus({ type: '', msg: '' });
     try {
-      const response = await fetch(url, {
+      const response = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -101,12 +104,13 @@ export default function AdminDashboard({ activeTab }) {
         } 
         else if (modeType === 'announcement') {
           logActivity('announcement', 'Annonce publiée', payload.titre);
-          setAnnouncement(initialAnnouncementState); // Remise à l'état initial du formulaire d'annonce
+          setAnnouncement(initialAnnouncementState);
         }
       } else {
         setStatus({ type: 'error', msg: data.message || 'Erreur retournée par le serveur.' });
       }
-    } catch (err) { console.error(err)
+    } catch (err) { 
+      console.error(err);
       setStatus({ type: 'error', msg: 'Erreur fatale: Impossible de joindre le backend.' });
     }
   };
@@ -216,7 +220,7 @@ export default function AdminDashboard({ activeTab }) {
             </div>
           ) : (
             <div className="bg-white border rounded-2xl p-6 shadow-sm">
-              <form onSubmit={(e) => { e.preventDefault(); handleFetchSubmit('http://localhost:5000/api/students', student, 'student'); }} className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); handleFetchSubmit('/api/students', student, 'student'); }} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <input type="text" placeholder="Nom" required value={student.nom} onChange={e => setStudent({...student, nom: e.target.value})} className="border p-2.5 rounded-xl text-sm" />
                   <input type="text" placeholder="Prénom" required value={student.prenom} onChange={e => setStudent({...student, prenom: e.target.value})} className="border p-2.5 rounded-xl text-sm" />
@@ -278,7 +282,7 @@ export default function AdminDashboard({ activeTab }) {
             </div>
           ) : (
             <div className="bg-white border rounded-2xl p-6 shadow-sm">
-              <form onSubmit={(e) => { e.preventDefault(); handleFetchSubmit('http://localhost:5000/api/professors', professor, 'professor'); }} className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); handleFetchSubmit('/api/professors', professor, 'professor'); }} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <input type="text" placeholder="Nom" required value={professor.nom} onChange={e => setProfessor({...professor, nom: e.target.value})} className="border p-2.5 rounded-xl text-sm" />
                   <input type="text" placeholder="Prénom" required value={professor.prenom} onChange={e => setProfessor({...professor, prenom: e.target.value})} className="border p-2.5 rounded-xl text-sm" />
@@ -306,7 +310,7 @@ export default function AdminDashboard({ activeTab }) {
         </div>
       )}
 
-      {/* VUE : GESTION DES ANNONCES (RÉTABLIE ET CORRIGÉE) */}
+      {/* VUE : GESTION DES ANNONCES */}
       {activeTab === 'announcements' && (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 md:p-8">
           <div className="flex items-center gap-2 border-b pb-3 mb-6">
@@ -314,7 +318,7 @@ export default function AdminDashboard({ activeTab }) {
             <h3 className="text-base font-bold text-slate-800">Diffuser une Annonce Officielle</h3>
           </div>
           
-          <form onSubmit={(e) => { e.preventDefault(); handleFetchSubmit('http://localhost:5000/api/announcements', announcement, 'announcement'); }} className="space-y-4">
+          <form onSubmit={(e) => { e.preventDefault(); handleFetchSubmit('/api/announcements', announcement, 'announcement'); }} className="space-y-4">
             <div>
               <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-1">Titre de l'annonce</label>
               <input type="text" placeholder="Ex: Report d'examen ou Avis général..." required value={announcement.titre} onChange={e => setAnnouncement({...announcement, titre: e.target.value})} className="w-full px-4 py-2.5 border border-slate-200 bg-slate-50/50 rounded-xl text-sm" />

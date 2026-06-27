@@ -10,6 +10,9 @@ export default function ProfessorDashboard({ viewMode }) {
   const [selectedSub, setSelectedSub] = useState(null);
   const [comment, setComment] = useState("");
 
+  // Récupération dynamique de l'URL du backend (Render en production, localhost en développement)
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   // Récupération instantanée du prof connecté depuis le localStorage
   const [profInfo] = useState(() => {
     const savedUser = localStorage.getItem('user');
@@ -35,7 +38,8 @@ export default function ProfessorDashboard({ viewMode }) {
   const fetchDashboardData = async () => {
     try {
       const token = localStorage.getItem('token');
-      const resSub = await fetch('http://localhost:5000/api/competences/professor', {
+      // Utilisation de la variable API_URL
+      const resSub = await fetch(`${API_URL}/api/competences/professor`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -91,7 +95,8 @@ export default function ProfessorDashboard({ viewMode }) {
   // Soumission de la décision d'évaluation
   const handleEvaluate = async (subId, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/competences/${subId}/evaluate`, {
+      // Utilisation de la variable API_URL
+      const response = await fetch(`${API_URL}/api/competences/${subId}/evaluate`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -246,8 +251,9 @@ export default function ProfessorDashboard({ viewMode }) {
               {selectedSub.fichier && (
                 <p className="flex items-center gap-1.5 mt-1.5">
                   <strong>Fichier Joint :</strong>{" "}
+                  {/* Remplacement de localhost par API_URL pour l'ouverture des fichiers */}
                   <a 
-                    href={`http://localhost:5000/uploads/${selectedSub.fichier}`} 
+                    href={`${API_URL}/uploads/${selectedSub.fichier}`} 
                     target="_blank" 
                     rel="noreferrer" 
                     className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-lg font-bold border border-blue-200 shadow-xs hover:bg-blue-100 hover:text-blue-800 transition-all text-[11px]"
