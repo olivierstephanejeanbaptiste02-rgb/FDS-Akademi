@@ -11,11 +11,14 @@ export default function PublicProjectView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Récupération dynamique de l'URL de l'API (Render en production, Localhost en dév)
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     const fetchPublicProject = async () => {
       try {
-        // ✅ URL corrigée avec "/shared/" pour correspondre exactement à la route de ton backend
-        const res = await fetch(`http://localhost:5000/api/competences/shared/${token}`);
+        // ✅ URL corrigée avec la variable d'environnement dynamique
+        const res = await fetch(`${API_BASE_URL}/api/competences/shared/${token}`);
         if (res.ok) {
           const data = await res.json();
           setProject(data);
@@ -34,7 +37,7 @@ export default function PublicProjectView() {
     if (token) {
       fetchPublicProject();
     }
-  }, [token]);
+  }, [token, API_BASE_URL]);
 
   if (loading) {
     return (
@@ -129,7 +132,7 @@ export default function PublicProjectView() {
             <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Pièces à conviction & Liens</p>
             <div className="flex flex-wrap gap-3">
               
-              {/* Bouton GitHub - Version SVG Natif pour éviter l'erreur d'export Lucide */}
+              {/* Bouton GitHub */}
               {project.github && (
                 <a 
                   href={project.github} 
@@ -148,7 +151,8 @@ export default function PublicProjectView() {
               {/* Bouton Document Joint */}
               {project.fichier && (
                 <a 
-                  href={`http://localhost:5000/uploads/${project.fichier}`} 
+                  // ✅ URL corrigée pour télécharger les documents directement sur Render en production
+                  href={`${API_BASE_URL}/uploads/${project.fichier}`} 
                   target="_blank" 
                   rel="noreferrer" 
                   className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold rounded-xl shadow-xs hover:bg-blue-100 transition-all"
@@ -171,7 +175,7 @@ export default function PublicProjectView() {
         {/* Pied de page */}
         <div className="bg-slate-50 border-t px-8 py-4 text-center">
           <p className="text-[10px] text-slate-400 font-medium">
-            Document authentifié , ce lien fait foi de certification académique.
+            Document authentifié, ce lien fait foi de certification académique.
           </p>
         </div>
 
