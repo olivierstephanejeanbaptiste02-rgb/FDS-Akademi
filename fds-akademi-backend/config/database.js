@@ -3,29 +3,34 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Configuration du pool de connexions MySQL
+// Configuration utilisant l'URL de connexion complète ou les variables séparées
+const dbConfig = process.env.DATABASE_URL 
+  ? { uri: process.env.DATABASE_URL }
+  : {
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME, 
+      port: parseInt(process.env.DB_PORT, 10) || 3306,
+    };
+
 const db = mysql.createPool({
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME, 
-  port: parseInt(process.env.DB_PORT, 10) || 3306,
+  ...dbConfig,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
   
-  // CONFIGURATION SSL CRUCIALE POUR LA PRODUCTION
-  // On active le SSL de manière sécurisée uniquement si on est en production
+  // CONFIGURATION SSL OBLIGATOIRE POUR LA PRODUCTION
   ssl: process.env.NODE_ENV === 'production' 
     ? { rejectUnauthorized: false } 
     : false
 });
 
-// Test rapide de connexion pour voir les erreurs directement dans les logs au démarrage
+// Test de connexion au démarrage
 if (process.env.NODE_ENV === 'production') {
   db.getConnection()
     .then(connection => {
-      console.log('✅ Connexion MySQL avec Railway établie avec succès via SSL.');
+      console.log('✅ Connexion MySQL avec Railway établie avec succès.');
       connection.release();
     })
     .catch(err => {
