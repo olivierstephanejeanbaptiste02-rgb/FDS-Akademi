@@ -4,7 +4,7 @@ import { ShieldCheck, Award, GraduationCap } from 'lucide-react';
 
 // Importation des images locales
 import logoFds from '../assets/fdsLogo.jpg';
-import bgFaculte from '../assets/faculte des sciences - UEH.jpg';
+import bgFaculte from '../assets/fdsueh.jpg';
 
 export default function Accueil() {
   const navigate = useNavigate();

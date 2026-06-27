@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Lock, AlertCircle } from 'lucide-react';
 
 // Importation de ton image de fond
-import bgFaculte from '../assets/faculTe des sciences - UEH.jpg';
+import bgFaculte from '../assets/fdsueh.jpg';
 
 export default function Login() {
   const navigate = useNavigate();
