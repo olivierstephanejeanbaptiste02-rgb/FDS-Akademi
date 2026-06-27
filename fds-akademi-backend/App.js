@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import { fileURLToPath } from 'url'; // Requis pour recréer __dirname en ES Modules
+import { fileURLToPath } from 'url';
 
 // Importation des fichiers de routes spécifiques
 import authRoutes from './routes/authRoutes.js';
@@ -10,20 +10,33 @@ import professorRoutes from './routes/professorRoutes.js';
 import announcementRoutes from './routes/announcementRoutes.js';
 import competenceRoutes from './routes/competenceRoutes.js';
 
-// Configuration de __dirname pour le mode ES Module (import/export)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 
+// Configuration des CORS sécurisée pour la production
+const allowedOrigins = [
+  'http://localhost:5173', // Pour vos tests en local avec Vite
+  process.env.FRONTEND_URL  // L'URL définitive de votre frontend Vercel
+];
 
 app.use(cors({
-  origin: '*', // pour toutes les liens
+  origin: function (origin, callback) {
+    // Permet les requêtes sans origine (comme les outils Postman ou les applications mobiles)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Bloqué par les restrictions CORS de production'));
+    }
+  },
   credentials: true
 }));
+
 app.use(express.json());
 
-// Rendre le dossier 'uploads' public avec un chemin absolu robuste
+// Rendre le dossier 'uploads' public
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Points d'ancrage modulaires de l'API RESTful
@@ -35,6 +48,12 @@ app.use('/api/competences', competenceRoutes);
 
 app.get('/', (req, res) => {
   res.send('Serveur API FDS Akademi opérationnel 🚀');
+});
+
+// CRUCIAL POUR RENDER : Écouter sur le port fourni par l'environnement
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Serveur en ligne sur le port ${PORT}`);
 });
 
 export default app;
